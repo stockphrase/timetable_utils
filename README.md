@@ -1,5 +1,4 @@
-# timetable_utils
-==================
+# timetable_utils: initial version
 
 
 Command-line utility for query Dartmouth's Timetable. Borrows heavily from 
