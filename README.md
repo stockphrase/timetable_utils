@@ -1,11 +1,19 @@
 # timetable_utils
+==================
+
 
 Command-line utility for query Dartmouth's Timetable. Borrows heavily from 
 student-authored code (https://github.com/katzdaniel/course_finder/) to parse 
 oddly formatted HTML.
 
+Requires:
+------------
++ lxml
+
 
 Sample usage:
+-------------
+
 
 <code>
 [jed@parergon timetable_utils ]$ bin/get_enrollments -d COLT

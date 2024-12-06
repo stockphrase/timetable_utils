@@ -1,0 +1,151 @@
+#!/usr/bin/env python
+#
+# extract enrollment information from the Dartmouth Timetable
+# 
+# Borrows heavily from code written by github/katzdaniel
+#
+# Jed Dobson
+# james.e.dobson@dartmouth.edu
+#
+# 12/05/2024
+#
+
+import requests
+from lxml import html
+import argparse
+
+url = 'https://oracle-www.dartmouth.edu/dart/groucho/timetable.display_courses'
+
+empty_seats = False
+parser = argparse.ArgumentParser(
+    description='timetable query')
+
+parser.add_argument('-v','--verbose',help='display verbose output', dest='verbose_flag', action='store_true')
+parser.add_argument('-sum','--summarize',help='summarize', dest='summarize', action='store_true')
+parser.add_argument('-t','--term',help='term in 202501 format')
+parser.add_argument('-d','--department',help='department code')
+parser.add_argument('-s','--section',help='section number')
+parser.add_argument('-e','--empty',help='calculate empty seats', dest="empty_seats", action='store_true')
+
+args = parser.parse_args()
+
+if args.department == None:
+   print("Need department code (ENGL/GOVT/etc)")
+   exit(255)
+else:
+   dept = args.department
+
+if args.term == None:
+   term = 202501
+else:
+   term = args.term
+
+
+# code to parse wonky Timetable data (why no <tr>?) borrowed from
+# https://github.com/katzdaniel/course_finder/
+def extract_class_information(html_content):
+    """
+    Extracts class information from the provided HTML content.
+
+    Args:
+        html_content (str): The HTML content as a string.
+
+    Returns:
+        List[Dict]: A list of dictionaries containing class information.
+    """
+
+    # Parse the HTML content
+    tree = html.fromstring(html_content)
+
+    # Find the data table
+    data_table = tree.xpath('//div[@class="data-table"]/table')[0]
+
+    # Extract headers
+    headers = [th.text_content().strip() for th in data_table.xpath('.//th')]
+
+    # Initialize list to hold class information
+    class_info_list = []
+
+    # Extract all <td> elements within the table
+    td_elements = data_table.xpath('.//td')
+
+    # Since the HTML is not well-structured with <tr> tags for each row,
+    # we will group every set of cells that correspond to the number of headers
+    num_columns = len(headers)
+    row_data = []
+    for td in td_elements:
+        text = td.text_content().strip()
+        if text == "&nbsp":
+            text = "NaN"
+        # Handle nested links and images
+        if td.xpath('.//a'):
+            text = td.xpath('.//a')[0].text_content().strip()
+        elif td.xpath('.//img'):
+            text = td.xpath('.//img')[0].get('src', '').strip()
+
+        row_data.append(text)
+
+        # Once we've collected data for one row, add it to the list
+        if len(row_data) == num_columns:
+            class_info = dict(zip(headers, row_data))
+            class_info_list.append(class_info)
+            row_data = []
+
+    return class_info_list
+
+def get_enrollment(dept):
+    payload = {
+        'distribradio': 'alldistribs',
+        'depts': ['no_value',dept],
+        'periods': 'no_value',
+        'distribs': 'no_value',
+        'distribs_i': 'no_value',
+        'distribs_wc': 'no_value',
+        'distribs_lang': 'no_value',
+        'deliveryradio': 'alldelivery',
+        'deliverymodes': 'no_value',
+        'pmode': 'public',
+        'term': term,
+        'levl': '',
+        'fys': 'n',
+        'wrt': 'n',
+        'pe': 'n',
+        'review': 'n',
+        'crnl': 'no_value',
+        'classyear': '2008',
+        'searchtype': 'Subject Area(s)',
+        'termradio': 'selectterms',
+        'terms': ['no_value', term],
+        'subjectradio': 'selectsubjects',
+        'hoursradio': 'allhours',
+        'sortorder': 'dept'
+    }
+    response = requests.post(url, data=payload)
+    timetable_data = extract_class_information(response.text)
+    return timetable_data
+
+timetable_data = get_enrollment(dept)
+
+# handle printing in a separate function
+def format_section(row):
+   global te
+   if args.empty_seats:
+      if row['Lim'] == "NaN":
+          es = "NaN"
+      else: 
+          es = str(int(row['Lim']) - int(row['Enrl']))
+          te += int(es)
+      print(f'{row['Subj']}-{row['Num']:10s} {row['Instructor']:30s} {row['Period Code']:3s} {row['Lim']:3s} {row['Enrl']:3s} {es:3s}')
+   else:
+       print(f'{row['Subj']}-{row['Num']:10s} {row['Instructor']:30s} {row['Period Code']:3s} {row['Lim']:3s} {row['Enrl']:3s}')
+
+te = 0
+for row in timetable_data:
+   if args.section != None:
+      if row['Num'] == args.section:
+         format_section(row)
+   else:
+      format_section(row)
+
+if args.empty_seats == True and args.summarize == True:
+   print(f'\nTotal empty seats: {te}')
