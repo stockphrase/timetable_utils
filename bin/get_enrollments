@@ -128,18 +128,20 @@ timetable_data = get_enrollment(dept)
 
 # handle printing in a separate function
 def format_section(row):
-   global te
+   global tes, te
+   te += int(row['Enrl'])
    if args.empty_seats:
       if row['Lim'] == "NaN":
           es = "NaN"
       else: 
           es = str(int(row['Lim']) - int(row['Enrl']))
-          te += int(es)
+          tes += int(es)
       print(f'{row['Subj']}-{row['Num']:10s} {row['Instructor']:30s} {row['Period Code']:3s} {row['Lim']:3s} {row['Enrl']:3s} {es:3s}')
    else:
        print(f'{row['Subj']}-{row['Num']:10s} {row['Instructor']:30s} {row['Period Code']:3s} {row['Lim']:3s} {row['Enrl']:3s}')
 
-te = 0
+te = 0     # total enrollment
+tes = 0    # total empty seats
 for row in timetable_data:
    if args.section != None:
       if row['Num'] == args.section:
@@ -148,4 +150,7 @@ for row in timetable_data:
       format_section(row)
 
 if args.empty_seats == True and args.summarize == True:
-   print(f'\nTotal empty seats: {te}')
+   print(f'\nTotal empty seats: {tes}')
+
+if args.summarize == True:
+   print(f'\nTotal enrollments: {te}')
