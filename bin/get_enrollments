@@ -29,7 +29,7 @@ def default_term():
     elif m >= 8 and m < 10:
         term = str(y) + "09"
     elif m >= 10:
-        term = str(y + 1) + "01"        
+        term = str(y) + "10"        
     return term
 
 
