@@ -157,6 +157,9 @@ def format_section(row):
       else: 
           es = str(int(row['Lim']) - int(row['Enrl']))
           tes += int(es)
+          # deal with overenrolled classes (don't count as empty seats)
+          if es[0] == "-":
+             tes = tes - int(es)
       print(f'{row['Subj']}-{row['Num']:10s} {row['Instructor']:30s} {row['Period Code']:3s} {row['Lim']:3s} {row['Enrl']:3s} {es:3s}')
    else:
        print(f'{row['Subj']}-{row['Num']:10s} {row['Instructor']:30s} {row['Period Code']:3s} {row['Lim']:3s} {row['Enrl']:3s}')
