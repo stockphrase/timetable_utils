@@ -11,8 +11,25 @@ Requires:
 
 
 Sample usage:
--------------
 
+-------------
+<code>
+[jed@parergon jed ]$ get_enrollments --help                 
+usage: get_enrollments [-h] [-v] [-sum] [-t TERM] [-d DEPARTMENT] [-s SECTION] [-e]
+
+timetable query
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         display verbose output
+  -sum, --summarize     summarize
+  -t TERM, --term TERM  term in 202501 format
+  -d DEPARTMENT, --department DEPARTMENT
+                        department code
+  -s SECTION, --section SECTION
+                        section number
+  -e, --empty           calculate empty seats
+</code>
 
 <code>
 [jed@parergon timetable_utils ]$ bin/get_enrollments -d COLT
