@@ -7,14 +7,31 @@
 # Jed Dobson
 # james.e.dobson@dartmouth.edu
 #
-# 12/05/2024
-#
+# Initial version: 12/05/2024
+# Latest update: 12/07/2024
 
 import requests
-from lxml import html
 import argparse
+from datetime import date
+from lxml import html
 
 url = 'https://oracle-www.dartmouth.edu/dart/groucho/timetable.display_courses'
+
+# generate default term 
+def default_term():
+    y, m  = date.today().timetuple()[:2]
+    if m == 1:
+        term = str(y) + "01"
+    elif m >= 2 and m < 5:
+        term = str(y) + "03"
+    elif m >= 5 and m < 8:
+        term = str(y) + "06"
+    elif m >= 8 and m < 10:
+        term = str(y) + "09"
+    elif m >= 10:
+        term = str(y + 1) + "01"        
+    return term
+
 
 empty_seats = False
 parser = argparse.ArgumentParser(
@@ -36,10 +53,14 @@ else:
    dept = args.department
 
 if args.term == None:
-   term = 202501
+   term = default_term()
 else:
    term = args.term
 
+
+if args.verbose_flag:
+   print(f'term: {term}')
+   print(f'dept: {dept}')
 
 # code to parse wonky Timetable data (why no <tr>?) borrowed from
 # https://github.com/katzdaniel/course_finder/
