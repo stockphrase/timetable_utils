@@ -13,7 +13,7 @@ Requires:
 Sample usage:
 
 -------------
-<code>
+<pre>
 [jed@parergon jed ]$ get_enrollments --help                 
 usage: get_enrollments [-h] [-v] [-sum] [-t TERM] [-d DEPARTMENT] [-s SECTION] [-e]
 
@@ -29,7 +29,7 @@ options:
   -s SECTION, --section SECTION
                         section number
   -e, --empty           calculate empty seats
-</code>
+</pre>
 
 <code>
 [jed@parergon timetable_utils ]$ bin/get_enrollments -d COLT
